@@ -69,6 +69,10 @@ def get_dashboard(
         else:
             # Streak broken
             current_streak = 0
+            
+    rewards = session.exec(
+        select(Reward).join(Task).where(Task.user_id == current_user.id)
+    ).all()
 
     return {
         "tasks": {
