@@ -48,7 +48,18 @@ async def analytics_middleware(request: Request, call_next):
 
 @app.on_event("startup")
 def on_startup():
-    SQLModel.metadata.create_all(engine)
+    try:
+        print("Attempting to connect to database...")
+        SQLModel.metadata.create_all(engine)
+        print("Database connected and tables created.")
+    except Exception as e:
+        print(f"CRITICAL: Database connection failed! {e}")
+        # We don't raise here so the app can still start and show us logs
+        pass
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "message": "Service is running"}
 
 app.include_router(auth.router)
 app.include_router(dashboard.router)
