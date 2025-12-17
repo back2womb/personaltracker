@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+venv/
+.venv/
+.gemini/
+.agent/
+logs/
+*.log
+execution.db
+
+# Node
+frontend/node_modules/
+frontend/.env
+frontend/.DS_Store
+
+# Mac
+.DS_Store
