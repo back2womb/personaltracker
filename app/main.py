@@ -30,9 +30,9 @@ async def analytics_middleware(request: Request, call_next):
     response = await call_next(request)
     
     # Simple tracking for App Loads (Frontend)
-    # We only care about the main page load, not every API call and static asset
     if request.url.path in ["/", "/index.html"]:
         try:
+            # Use a separate try/except for DB interaction so it doesn't affect the user response
             with Session(engine) as session:
                 from app.models.analytics import AnalyticsEvent
                 event = AnalyticsEvent(
@@ -42,7 +42,8 @@ async def analytics_middleware(request: Request, call_next):
                 session.add(event)
                 session.commit()
         except Exception as e:
-            print(f"Analytics Error: {e}")
+            # Just log error, don't crash user experience
+            print(f"ANALYTICS WARNING: Logging failed (DB Issue): {e}")
 
     return response
 

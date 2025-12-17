@@ -4,6 +4,7 @@ from app.core.config import DATABASE_URL
 engine = create_engine(
     DATABASE_URL,
     echo=True,
+    pool_pre_ping=True,  # Test connection before using it
     connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {},
 )
 
