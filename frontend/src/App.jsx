@@ -113,6 +113,38 @@ function App() {
     return acc;
   }, {});
 
+  // State defined at top
+  const [usersList, setUsersList] = useState([]);
+  const [showUsers, setShowUsers] = useState(false);
+  const [adminStats, setAdminStats] = useState(null);
+
+  // ... (existing handlers)
+
+  const fetchUsers = async () => {
+    try {
+      const res = await api.get("/dashboard/community"); // Updated endpoint
+      setUsersList(res.data);
+      setShowUsers(true);
+    } catch (error) {
+      console.error("Error fetching community stats:", error);
+      alert("Failed to load community data");
+    }
+  };
+
+  const fetchAdminStats = async () => {
+    try {
+      const res = await api.get("/dashboard/admin/analytics");
+      if (res.data.error) {
+        alert("Access Denied: Admin only.");
+      } else {
+        setAdminStats(res.data);
+      }
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      alert("Failed to access admin panel.");
+    }
+  };
+
   if (!token) {
     return <Login setToken={setToken} />;
   }
@@ -157,6 +189,88 @@ function App() {
         </div>
       )}
 
+      {/* Admin Modal */}
+      {adminStats && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200
+        }}>
+          <div className="card" style={{ width: '500px', maxWidth: '90%', textAlign: 'center' }}>
+            <h2 style={{ color: '#22d3ee', marginBottom: '2rem' }}>🕵️‍♂️ Deployment Analytics</h2>
+
+            <div className="grid-cols-2" style={{ gap: '1rem', marginBottom: '2rem' }}>
+              <div style={{ background: '#334155', padding: '1rem', borderRadius: '8px' }}>
+                <div style={{ fontSize: '2rem' }}>👀</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{adminStats.visits}</div>
+                <div style={{ color: '#94a3b8' }}>Total Site Visits</div>
+              </div>
+              <div style={{ background: '#334155', padding: '1rem', borderRadius: '8px' }}>
+                <div style={{ fontSize: '2rem' }}>👤</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{adminStats.total_users}</div>
+                <div style={{ color: '#94a3b8' }}>Registered Users</div>
+              </div>
+              <div style={{ background: '#334155', padding: '1rem', borderRadius: '8px' }}>
+                <div style={{ fontSize: '2rem' }}>🔑</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{adminStats.logins}</div>
+                <div style={{ color: '#94a3b8' }}>Total Logins</div>
+              </div>
+              <div style={{ background: '#334155', padding: '1rem', borderRadius: '8px' }}>
+                <div style={{ fontSize: '2rem' }}>📝</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{adminStats.registrations}</div>
+                <div style={{ color: '#94a3b8' }}>Signups</div>
+              </div>
+            </div>
+
+            <button onClick={() => setAdminStats(null)} className="btn btn-primary">Close</button>
+          </div>
+        </div>
+      )}
+
+      {/* Community Leaderboard Modal (existing) */}
+      {showUsers && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, backdropFilter: 'blur(5px)'
+        }}>
+          <div className="card" style={{ width: '600px', maxWidth: '95%', maxHeight: '85vh', overflowY: 'auto' }}>
+            <div className="flex-between mb-4">
+              <h2 style={{ background: 'linear-gradient(to right, #fbbf24, #d97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                🏆 Global Leaderboard
+              </h2>
+              <button onClick={() => setShowUsers(false)} className="btn btn-outline" style={{ padding: '0.25rem 0.6rem', fontSize: '1.2rem' }}>×</button>
+            </div>
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', color: 'var(--text-main)' }}>
+              <thead>
+                <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
+                  <th style={{ padding: '1rem', borderRadius: '8px 0 0 8px' }}>Rank</th>
+                  <th style={{ padding: '1rem' }}>User</th>
+                  <th style={{ padding: '1rem', textAlign: 'center' }}>Tasks Done</th>
+                  <th style={{ padding: '1rem', borderRadius: '0 8px 8px 0', textAlign: 'center' }}>Active Streaks</th>
+                </tr>
+              </thead>
+              <tbody>
+                {usersList.map((u, index) => {
+                  let medal = null;
+                  if (index === 0) medal = '🥇';
+                  if (index === 1) medal = '🥈';
+                  if (index === 2) medal = '🥉';
+
+                  return (
+                    <tr key={u.username} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <td style={{ padding: '1rem', fontSize: '1.2rem' }}>{medal || index + 1}</td>
+                      <td style={{ padding: '1rem', fontWeight: 'bold' }}>{u.username}</td>
+                      <td style={{ padding: '1rem', textAlign: 'center', color: '#10b981', fontWeight: 'bold' }}>{u.tasks_completed}</td>
+                      <td style={{ padding: '1rem', textAlign: 'center', color: '#f59e0b' }}>{u.active_streaks > 0 ? `🔥 ${u.active_streaks}` : '-'}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       <header className="flex-between mb-8">
         <div>
           <h1 style={{ background: 'linear-gradient(to right, #3b82f6, #06b6d4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
@@ -164,9 +278,17 @@ function App() {
           </h1>
           <p>Personal Execution Engine v1.2</p>
         </div>
-        <button onClick={handleLogout} className="btn btn-outline" style={{ fontSize: '0.8rem' }}>
-          Logout
-        </button>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button onClick={fetchAdminStats} className="btn btn-outline" style={{ fontSize: '0.8rem', color: '#22d3ee', borderColor: '#22d3ee' }}>
+            🛡️ Admin
+          </button>
+          <button onClick={fetchUsers} className="btn btn-outline" style={{ fontSize: '0.8rem' }}>
+            👥 Community
+          </button>
+          <button onClick={handleLogout} className="btn btn-outline" style={{ fontSize: '0.8rem' }}>
+            Logout
+          </button>
+        </div>
       </header>
 
       <main>
