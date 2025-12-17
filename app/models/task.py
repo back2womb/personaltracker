@@ -23,3 +23,4 @@ class Task(SQLModel, table=True):
     is_active: bool = True
     created_at: datetime = Field(default_factory=datetime.utcnow)
     user_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    scheduled_time: Optional[str] = Field(default=None) # Format "HH:MM" 24h or "HH:MM AM/PM"

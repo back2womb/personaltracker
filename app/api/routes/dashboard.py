@@ -33,6 +33,14 @@ def get_dashboard(
             Task.user_id == current_user.id
         )
     ).all()
+    
+    # Total Completed All Time
+    completed_all_time = session.exec(
+        select(DailyLog).join(Task).where(
+            DailyLog.completed == True,
+            Task.user_id == current_user.id
+        )
+    ).all()
 
     # Calculate Global Streak (User Level)
     # Get all unique dates where user completed at least one task
@@ -78,7 +86,9 @@ def get_dashboard(
         "tasks": {
             "total": len(total_tasks),
             "active": len(active_tasks),
-            "completed_today": len(today_logs)
+            "completed_today": len(today_logs),
+            "unfinished_today": max(0, len(active_tasks) - len(today_logs)),
+            "completed_all_time": len(completed_all_time)
         },
         "streaks": {
             "active_streaks": current_streak, # Using global streak here

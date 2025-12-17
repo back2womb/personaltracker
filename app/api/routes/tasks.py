@@ -18,6 +18,7 @@ class TaskReadWithStatus(BaseModel):
     title: str
     description: Optional[str] = None
     category: str
+    scheduled_time: Optional[str] = None
     current_streak: int
     longest_streak: int
     is_completed_today: bool
@@ -26,6 +27,7 @@ class TaskUpdate(BaseModel):
     title: Optional[str] = None
     category: Optional[str] = None
     description: Optional[str] = None
+    scheduled_time: Optional[str] = None
 
 @router.get("/", response_model=List[TaskReadWithStatus])
 def get_tasks(
@@ -56,6 +58,7 @@ def get_tasks(
             title=task.title,
             description=task.description,
             category=task.category or Category.OTHERS,
+            scheduled_time=task.scheduled_time,
             current_streak=current_streak,
             longest_streak=longest_streak,
             is_completed_today=is_completed_today
@@ -67,6 +70,7 @@ class TaskCreate(BaseModel):
     title: str
     description: Optional[str] = None
     category: Optional[str] = "Others"
+    scheduled_time: Optional[str] = None
 
 @router.post("/", response_model=Task)
 def create_task(
@@ -109,6 +113,8 @@ def update_task(
         task.category = task_update.category
     if task_update.description:
         task.description = task_update.description
+    if task_update.scheduled_time:
+        task.scheduled_time = task_update.scheduled_time
     
     try:
         session.add(task)
