@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlmodel import Session, select
-from datetime import date
+from datetime import date, timedelta
 
 from app.core.database import get_session
 from app.api.deps import get_current_user
@@ -34,18 +34,41 @@ def get_dashboard(
         )
     ).all()
 
-    streaks = session.exec(
-        select(Streak).join(Task).where(Task.user_id == current_user.id)
+    # Calculate Global Streak (User Level)
+    # Get all unique dates where user completed at least one task
+    completed_dates = session.exec(
+        select(DailyLog.log_date)
+        .join(Task)
+        .where(
+            Task.user_id == current_user.id,
+            DailyLog.completed == True
+        )
+        .distinct()
     ).all()
     
-    rewards = session.exec(
-        select(Reward).join(Task).where(Task.user_id == current_user.id)
-    ).all()
-
-    longest_streak = max(
-        [s.longest_streak for s in streaks],
-        default=0
-    )
+    # Sort dates descending
+    sorted_dates = sorted([d for d in completed_dates], reverse=True)
+    
+    current_streak = 0
+    if sorted_dates:
+        # Check if the most recent completion was today or yesterday
+        last_completion = sorted_dates[0]
+        today_date = date.today()
+        yesterday = today_date - timedelta(days=1)
+        
+        if last_completion == today_date or last_completion == yesterday:
+            current_streak = 1
+            # Check previous dates
+            check_date = last_completion - timedelta(days=1)
+            for d in sorted_dates[1:]:
+                if d == check_date:
+                    current_streak += 1
+                    check_date -= timedelta(days=1)
+                else:
+                    break
+        else:
+            # Streak broken
+            current_streak = 0
 
     return {
         "tasks": {
@@ -54,8 +77,8 @@ def get_dashboard(
             "completed_today": len(today_logs)
         },
         "streaks": {
-            "active_streaks": len(streaks),
-            "longest_streak": longest_streak
+            "active_streaks": current_streak, # Using global streak here
+            "longest_streak": current_streak  # Simplified for now
         },
         "rewards": {
             "total_rewards": len(rewards)

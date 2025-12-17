@@ -273,86 +273,106 @@ function App() {
 
       <header className="flex-between mb-8">
         <div>
-          <h1 style={{ background: 'linear-gradient(to right, #3b82f6, #06b6d4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            Reference Implementation
+          <h1 style={{ fontSize: '2rem', background: 'linear-gradient(to right, #3b82f6, #06b6d4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.05em' }}>
+            Daily Goals
           </h1>
-          <p>Personal Execution Engine v1.2</p>
+          <p style={{ fontSize: '0.9rem', opacity: 0.8 }}>Build better habits, one day at a time.</p>
         </div>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <button onClick={fetchAdminStats} className="btn btn-outline" style={{ fontSize: '0.8rem', color: '#22d3ee', borderColor: '#22d3ee' }}>
+        <div style={{ display: 'flex', gap: '0.8rem' }}>
+          <button onClick={fetchAdminStats} className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}>
             🛡️ Admin
           </button>
-          <button onClick={fetchUsers} className="btn btn-outline" style={{ fontSize: '0.8rem' }}>
-            👥 Community
+          <button onClick={fetchUsers} className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}>
+            🏆 Leaderboard
           </button>
-          <button onClick={handleLogout} className="btn btn-outline" style={{ fontSize: '0.8rem' }}>
-            Logout
+          <button onClick={handleLogout} className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}>
+            Log Out
           </button>
         </div>
       </header>
 
       <main>
-        <DashboardStats stats={dashboard} />
+        {/* Quick Stats Row */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+          <div className="card" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span style={{ fontSize: '1.5rem', background: 'rgba(59, 130, 246, 0.1)', padding: '0.5rem', borderRadius: '50%' }}>🔥</span>
+            <div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{dashboard?.streaks?.longest_streak || 0}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Days Streak</div>
+            </div>
+          </div>
+          <div className="card" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span style={{ fontSize: '1.5rem', background: 'rgba(16, 185, 129, 0.1)', padding: '0.5rem', borderRadius: '50%' }}>✅</span>
+            <div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{dashboard?.tasks?.completed_today || 0}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Completed Today</div>
+            </div>
+          </div>
+        </div>
 
+        {/* New Goal Input Bar */}
         <section className="mb-8">
-          <div className="card" style={{ marginBottom: '2rem' }}>
-            <h3 style={{ marginBottom: '1rem' }}>Initialize New Protocol</h3>
-            <form onSubmit={handleCreateTask} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr auto', gap: '1rem' }}>
-              <input
-                className="input"
-                placeholder="Protocol Name..."
-                value={taskTitle}
-                onChange={(e) => setTaskTitle(e.target.value)}
-              />
-              <select
-                className="input"
-                value={taskCategory}
-                onChange={(e) => setTaskCategory(e.target.value)}
-              >
-                {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-              </select>
-              <button type="submit" className="btn btn-primary">Create</button>
-            </form>
-          </div>
+          <form onSubmit={handleCreateTask} className="card" style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: '0.5rem', padding: '0.75rem', alignItems: 'center' }}>
+            <input
+              className="input"
+              style={{ border: 'none', background: 'transparent', fontSize: '1rem' }}
+              placeholder="✨ What do you want to achieve today?"
+              value={taskTitle}
+              onChange={(e) => setTaskTitle(e.target.value)}
+            />
+            <select
+              className="input"
+              style={{ width: '150px', fontSize: '0.9rem', padding: '0.5rem' }}
+              value={taskCategory}
+              onChange={(e) => setTaskCategory(e.target.value)}
+            >
+              {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+            </select>
+            <button type="submit" className="btn btn-primary" style={{ borderRadius: '0.5rem', width: '40px', height: '40px', padding: 0 }}>
+              +
+            </button>
+          </form>
+        </section>
 
-          <div className="flex-column" style={{ gap: '2rem' }}>
-            {/* Fallback view if grouping fails */}
-            {tasks.length > 0 && Object.values(groupedTasks).every(g => g.length === 0) && (
-              <div style={{ color: 'red' }}>
-                Grouping Logic Mismatch! Listing all tasks raw:
-                {tasks.map(task => <TaskCard key={task.id} task={task} onToggle={handleToggleTask} onEdit={setEditingTask} />)}
-              </div>
-            )}
+        <section className="flex-column" style={{ gap: '2rem' }}>
+          {/* Fallback view if grouping fails */}
+          {tasks.length > 0 && Object.values(groupedTasks).every(g => g.length === 0) && (
+            <div style={{ color: 'red' }}>
+              Grouping Logic Mismatch! Listing all tasks raw:
+              {tasks.map(task => <TaskCard key={task.id} task={task} onToggle={handleToggleTask} onEdit={setEditingTask} />)}
+            </div>
+          )}
 
-            {CATEGORIES.map(category => {
-              const categoryTasks = groupedTasks[category];
-              if (!categoryTasks || categoryTasks.length === 0) return null;
+          {CATEGORIES.map(category => {
+            const categoryTasks = groupedTasks[category];
+            if (!categoryTasks || categoryTasks.length === 0) return null;
 
-              return (
-                <div key={category} className="animate-fade-in">
-                  <h3 style={{ borderBottom: '1px solid var(--bg-surface-hover)', paddingBottom: '0.5rem', marginBottom: '1rem', color: 'var(--text-muted)', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                    {category}
-                  </h3>
-                  <div className="flex-column">
-                    {categoryTasks.map(task => (
-                      <TaskCard
-                        key={task.id}
-                        task={task}
-                        onToggle={handleToggleTask}
-                        onEdit={setEditingTask}
-                      />
-                    ))}
-                  </div>
+            return (
+              <div key={category} className="animate-fade-in">
+                <h3 style={{ borderBottom: '1px solid var(--bg-surface-hover)', paddingBottom: '0.5rem', marginBottom: '1rem', color: 'var(--text-muted)', fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                  {category}
+                </h3>
+                <div className="flex-column">
+                  {categoryTasks.map(task => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onToggle={handleToggleTask}
+                      onEdit={setEditingTask}
+                    />
+                  ))}
                 </div>
-              );
-            })}
-
-            {tasks.length === 0 && (
-              <div className="text-center" style={{ padding: '2rem', color: 'var(--text-muted)' }}>
-                No active protocols found. Initiate one above.
               </div>
-            )}
-          </div>
+            );
+          })}
+
+          {tasks.length === 0 && (
+            <div className="text-center" style={{ padding: '4rem', color: 'var(--text-muted)' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🌱</div>
+              <p>Your day is a blank canvas.</p>
+              <p>Add a goal above to get started!</p>
+            </div>
+          )}
         </section>
       </main>
     </div>
