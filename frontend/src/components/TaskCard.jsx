@@ -72,6 +72,11 @@ const TaskCard = ({ task, onToggle, onEdit }) => {
                     >
                         {task.category}
                     </span>
+                    {task.scheduled_time && (
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.2rem', background: 'rgba(255,255,255,0.05)', padding: '1px 6px', borderRadius: '4px' }}>
+                            ⏰ {task.scheduled_time}
+                        </span>
+                    )}
                 </div>
                 {task.current_streak > 0 && (
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>

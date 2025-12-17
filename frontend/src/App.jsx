@@ -22,6 +22,7 @@ function App() {
   // Form State
   const [taskTitle, setTaskTitle] = useState("");
   const [taskCategory, setTaskCategory] = useState(CATEGORIES[4]); // Default to Others
+  const [taskTime, setTaskTime] = useState('');
 
   // Edit State
   const [editingTask, setEditingTask] = useState(null);
@@ -80,9 +81,14 @@ function App() {
     if (!taskTitle.trim()) return;
 
     try {
-      await api.post("/tasks/", { title: taskTitle, category: taskCategory });
+      await api.post("/tasks/", {
+        title: taskTitle,
+        category: taskCategory,
+        scheduled_time: taskTime || null
+      });
       setTaskTitle("");
       setTaskCategory(CATEGORIES[4]);
+      setTaskTime('');
       fetchData();
     } catch (error) {
       console.error("Error creating task:", error);
@@ -302,37 +308,44 @@ function App() {
             </div>
           </div>
           <div className="card" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span style={{ fontSize: '1.5rem', background: 'rgba(239, 68, 68, 0.1)', padding: '0.5rem', borderRadius: '50%' }}>⏳</span>
+            <div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{dashboard?.tasks?.unfinished_today || 0}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Remaining</div>
+            </div>
+          </div>
+          <div className="card" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <span style={{ fontSize: '1.5rem', background: 'rgba(16, 185, 129, 0.1)', padding: '0.5rem', borderRadius: '50%' }}>✅</span>
             <div>
               <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{dashboard?.tasks?.completed_today || 0}</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Today's Wins</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Done Today</div>
             </div>
           </div>
           <div className="card" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <span style={{ fontSize: '1.5rem', background: 'rgba(239, 68, 68, 0.1)', padding: '0.5rem', borderRadius: '50%' }}>📌</span>
+            <span style={{ fontSize: '1.5rem', background: 'rgba(139, 92, 246, 0.1)', padding: '0.5rem', borderRadius: '50%' }}>🏆</span>
             <div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{dashboard?.tasks?.active || 0}</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Active Goals</div>
-            </div>
-          </div>
-          <div className="card" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <span style={{ fontSize: '1.5rem', background: 'rgba(139, 92, 246, 0.1)', padding: '0.5rem', borderRadius: '50%' }}>💎</span>
-            <div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{dashboard?.rewards?.total_rewards || 0}</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Rewards</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{dashboard?.tasks?.completed_all_time || 0}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Total Wins</div>
             </div>
           </div>
         </div>
 
         {/* New Goal Input Bar */}
         <section className="mb-8">
-          <form onSubmit={handleCreateTask} className="card" style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: '0.5rem', padding: '0.75rem', alignItems: 'center' }}>
+          <form onSubmit={handleCreateTask} className="card" style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto', gap: '0.5rem', padding: '0.75rem', alignItems: 'center' }}>
             <input
               className="input"
               style={{ border: 'none', background: 'transparent', fontSize: '1rem' }}
               placeholder="✨ What do you want to achieve today?"
               value={taskTitle}
               onChange={(e) => setTaskTitle(e.target.value)}
+            />
+            <input
+              type="time"
+              className="input"
+              style={{ width: 'auto', fontSize: '0.9rem', padding: '0.5rem', cursor: 'pointer' }}
+              value={taskTime}
+              onChange={(e) => setTaskTime(e.target.value)}
             />
             <select
               className="input"
