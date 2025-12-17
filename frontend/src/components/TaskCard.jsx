@@ -74,7 +74,7 @@ const TaskCard = ({ task, onToggle, onEdit }) => {
                     </span>
                     {task.scheduled_time && (
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.2rem', background: 'rgba(255,255,255,0.05)', padding: '1px 6px', borderRadius: '4px' }}>
-                            ⏰ {task.scheduled_time}
+                            ⏳ {task.scheduled_time}m
                         </span>
                     )}
                 </div>

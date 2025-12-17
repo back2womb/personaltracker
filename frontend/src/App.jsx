@@ -341,9 +341,12 @@ function App() {
               onChange={(e) => setTaskTitle(e.target.value)}
             />
             <input
-              type="time"
+              type="number"
+              min="1"
+              max="1440"
               className="input"
-              style={{ width: 'auto', fontSize: '0.9rem', padding: '0.5rem', cursor: 'pointer' }}
+              style={{ width: '80px', fontSize: '0.9rem', padding: '0.5rem', textAlign: 'center' }}
+              placeholder="Mins"
               value={taskTime}
               onChange={(e) => setTaskTime(e.target.value)}
             />
