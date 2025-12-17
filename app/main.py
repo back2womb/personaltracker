@@ -62,6 +62,32 @@ def on_startup():
 def health_check():
     return {"status": "ok", "message": "Service is running"}
 
+@app.get("/debug/fix")
+def debug_fix_db():
+    log = []
+    try:
+        from app.core.config import DATABASE_URL
+        from app.models.user import User
+        from sqlmodel import select
+        
+        # 1. Check URL
+        clean_url = DATABASE_URL.split("@")[-1] if "@" in DATABASE_URL else "HIDDEN"
+        log.append(f"DB Config: {clean_url}")
+        
+        # 2. Force Create Tables
+        log.append("Running create_all...")
+        SQLModel.metadata.create_all(engine)
+        log.append("Tables Created.")
+        
+        # 3. Test Query
+        with Session(engine) as session:
+            users = session.exec(select(User)).all()
+            log.append(f"Users found: {len(users)}")
+            
+        return {"status": "success", "log": log}
+    except Exception as e:
+        return {"status": "error", "error": str(e), "log": log}
+
 app.include_router(auth.router)
 app.include_router(dashboard.router)
 app.include_router(tasks.router)
