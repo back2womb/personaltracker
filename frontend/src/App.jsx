@@ -293,19 +293,33 @@ function App() {
 
       <main>
         {/* Quick Stats Row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
           <div className="card" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <span style={{ fontSize: '1.5rem', background: 'rgba(59, 130, 246, 0.1)', padding: '0.5rem', borderRadius: '50%' }}>🔥</span>
             <div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{dashboard?.streaks?.longest_streak || 0}</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Days Streak</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{dashboard?.streaks?.active_streaks || 0}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Daily Streak</div>
             </div>
           </div>
           <div className="card" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <span style={{ fontSize: '1.5rem', background: 'rgba(16, 185, 129, 0.1)', padding: '0.5rem', borderRadius: '50%' }}>✅</span>
             <div>
               <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{dashboard?.tasks?.completed_today || 0}</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Completed Today</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Today's Wins</div>
+            </div>
+          </div>
+          <div className="card" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span style={{ fontSize: '1.5rem', background: 'rgba(239, 68, 68, 0.1)', padding: '0.5rem', borderRadius: '50%' }}>📌</span>
+            <div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{dashboard?.tasks?.active || 0}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Active Goals</div>
+            </div>
+          </div>
+          <div className="card" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span style={{ fontSize: '1.5rem', background: 'rgba(139, 92, 246, 0.1)', padding: '0.5rem', borderRadius: '50%' }}>💎</span>
+            <div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{dashboard?.rewards?.total_rewards || 0}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Rewards</div>
             </div>
           </div>
         </div>
