@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from sqlmodel import SQLModel
 from app.core.database import engine
-from app.api.routes import tasks, logs, dashboard, auth
+from app.api.routes import tasks, logs, dashboard, auth, news
 from fastapi.middleware.cors import CORSMiddleware
 
 # Explicitly import models to ensure they are registered with SQLModel.metadata
@@ -78,6 +78,7 @@ app.include_router(auth.router)
 app.include_router(dashboard.router)
 app.include_router(tasks.router)
 app.include_router(logs.router)
+app.include_router(news.router)
 
 from fastapi.staticfiles import StaticFiles
 from os import path

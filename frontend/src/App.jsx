@@ -125,6 +125,7 @@ function App() {
   const [showUsers, setShowUsers] = useState(false);
   const [adminStats, setAdminStats] = useState(null);
   const [insights, setInsights] = useState(null);
+  const [news, setNews] = useState(null);
 
   // ... (existing handlers)
 
@@ -179,6 +180,16 @@ function App() {
     }
   };
 
+  const fetchNews = async () => {
+    try {
+      const res = await api.get("/news/");
+      setNews(res.data);
+    } catch (error) {
+      console.error("News error", error);
+      alert("Failed to load news");
+    }
+  };
+
   if (!token) {
     return <Login setToken={setToken} />;
   }
@@ -219,6 +230,55 @@ function App() {
                 <button type="submit" className="btn btn-primary">Save Changes</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* News Modal */}
+      {news && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1300
+        }}>
+          <div className="card" style={{ width: '900px', maxWidth: '95%', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div className="flex-between mb-4">
+              <h2 style={{ background: 'linear-gradient(to right, #34d399, #22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                📰 Daily Brief
+              </h2>
+              <button onClick={() => setNews(null)} className="btn btn-outline">×</button>
+            </div>
+
+            <div className="grid-cols-2" style={{ gap: '2rem' }}>
+              <div>
+                <h3 className="text-accent" style={{ borderBottom: '1px solid #334155', paddingBottom: '0.5rem', marginBottom: '1rem' }}>📈 Finance & Investing</h3>
+                {news.finance?.map((item, i) => (
+                  <div key={i} style={{ marginBottom: '1.5rem', background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px' }}>
+                    <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#e2e8f0', textDecoration: 'none', display: 'block', marginBottom: '0.5rem' }} className="hover-link">
+                      {item.title}
+                    </a>
+                    <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.5rem' }}>{new Date(item.date).toDateString()}</div>
+                    <p style={{ fontSize: '0.9rem', color: '#cbd5e1', lineHeight: '1.5' }}>
+                      {item.summary.slice(0, 150)}...
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div>
+                <h3 className="text-accent" style={{ borderBottom: '1px solid #334155', paddingBottom: '0.5rem', marginBottom: '1rem' }}>🌱 Personal Growth</h3>
+                {news.growth?.map((item, i) => (
+                  <div key={i} style={{ marginBottom: '1.5rem', background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px' }}>
+                    <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#e2e8f0', textDecoration: 'none', display: 'block', marginBottom: '0.5rem' }} className="hover-link">
+                      {item.title}
+                    </a>
+                    <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.5rem' }}>{new Date(item.date).toDateString()}</div>
+                    <p style={{ fontSize: '0.9rem', color: '#cbd5e1', lineHeight: '1.5' }}>
+                      {item.summary.slice(0, 150)}...
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -383,6 +443,9 @@ function App() {
           </button>
           <button onClick={fetchInsights} className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}>
             🧠 Insights
+          </button>
+          <button onClick={fetchNews} className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}>
+            📰 Live News
           </button>
           <button onClick={fetchUsers} className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}>
             🏆 Leaderboard
