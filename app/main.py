@@ -62,6 +62,28 @@ def on_startup():
 def health_check():
     return {"status": "ok", "message": "Service is running"}
 
+@app.post("/debug/reset_password")
+def debug_reset_password(username: str, new_pass: str):
+    try:
+        from app.core.security import get_password_hash
+        from app.models.user import User
+        from sqlmodel import select
+        
+        with Session(engine) as session:
+            user = session.exec(select(User).where(User.username == username)).first()
+            if not user:
+                # Try case insensitive
+                # Postgres doesnt support ILIKE in sqlmodel easily without col expr
+                # Iterate? No, too slow. Just return failure.
+                return {"status": "error", "message": f"User '{username}' not found"}
+            
+            user.hashed_password = get_password_hash(new_pass)
+            session.add(user)
+            session.commit()
+            return {"status": "success", "message": f"Password updated for {username}"}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
 @app.get("/debug/migrate_time")
 def debug_migrate_time():
     try:
