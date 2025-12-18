@@ -3,6 +3,7 @@ import api from "./api";
 import DashboardStats from "./components/DashboardStats";
 import TaskCard from "./components/TaskCard";
 import Login from "./components/Login";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const CATEGORIES = [
   "Personal Development",
@@ -123,6 +124,7 @@ function App() {
   const [usersList, setUsersList] = useState([]);
   const [showUsers, setShowUsers] = useState(false);
   const [adminStats, setAdminStats] = useState(null);
+  const [insights, setInsights] = useState(null);
 
   // ... (existing handlers)
 
@@ -167,6 +169,16 @@ function App() {
     }
   };
 
+  const fetchInsights = async () => {
+    try {
+      const res = await api.get("/dashboard/insights");
+      setInsights(res.data);
+    } catch (error) {
+      console.error("Insights error", error);
+      alert("Failed to load insights");
+    }
+  };
+
   if (!token) {
     return <Login setToken={setToken} />;
   }
@@ -207,6 +219,67 @@ function App() {
                 <button type="submit" className="btn btn-primary">Save Changes</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Insights Modal */}
+      {insights && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200
+        }}>
+          <div className="card" style={{ width: '800px', maxWidth: '95%', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div className="flex-between mb-4">
+              <h2 style={{ background: 'linear-gradient(to right, #818cf8, #c084fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                🧠 AI Behavior Analytics
+              </h2>
+              <button onClick={() => setInsights(null)} className="btn btn-outline">×</button>
+            </div>
+
+            <div className="card" style={{ background: '#1e293b', marginBottom: '1rem', borderLeft: '4px solid #818cf8', padding: '1rem' }}>
+              <h3 className="text-accent" style={{ marginBottom: '0.5rem' }}>Productivity Trend</h3>
+              <p style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{insights.trend}</p>
+              <div style={{ height: '200px', marginTop: '1rem' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={insights.last_7_days}>
+                    <XAxis dataKey="date" stroke="#94a3b8" fontSize={12} />
+                    <YAxis stroke="#94a3b8" fontSize={12} />
+                    <Tooltip contentStyle={{ background: '#1e293b', borderColor: '#334155' }} />
+                    <Bar dataKey="completed" fill="#818cf8" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="grid-cols-2" style={{ gap: '1rem' }}>
+              <div className="card" style={{ background: '#1e293b' }}>
+                <h4 style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '1rem' }}>Weekly Pattern</h4>
+                <div style={{ height: '200px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={insights.weekly_pattern}>
+                      <XAxis dataKey="day" stroke="#94a3b8" fontSize={10} />
+                      <Tooltip contentStyle={{ background: '#1e293b', borderColor: '#334155' }} />
+                      <Bar dataKey="tasks" fill="#34d399" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="card" style={{ background: '#1e293b' }}>
+                <h4 style={{ color: '#94a3b8', fontSize: '0.9rem', marginBottom: '1rem' }}>Focus Areas</h4>
+                <div style={{ height: '200px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart layout="vertical" data={insights.category_distribution}>
+                      <XAxis type="number" hide />
+                      <YAxis dataKey="name" type="category" width={80} stroke="#94a3b8" fontSize={10} />
+                      <Tooltip contentStyle={{ background: '#1e293b', borderColor: '#334155' }} />
+                      <Bar dataKey="value" fill="#f472b6" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -266,6 +339,7 @@ function App() {
             </div>
 
             <table style={{ width: '100%', borderCollapse: 'collapse', color: 'var(--text-main)' }}>
+              {/* Table Content */}
               <thead>
                 <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
                   <th style={{ padding: '1rem', borderRadius: '8px 0 0 8px' }}>Rank</th>
@@ -306,6 +380,9 @@ function App() {
         <div style={{ display: 'flex', gap: '0.8rem' }}>
           <button onClick={fetchAdminStats} className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}>
             🛡️ Admin
+          </button>
+          <button onClick={fetchInsights} className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}>
+            🧠 Insights
           </button>
           <button onClick={fetchUsers} className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}>
             🏆 Leaderboard

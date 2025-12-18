@@ -209,3 +209,64 @@ def export_admin_data(
         "logs": safe_dump(logs),
         "analytics": safe_dump(analytics)
     }
+
+@router.get("/insights")
+def get_insights(
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Returns statistical analysis of user behavior for visualization.
+    """
+    # Fetch all completed tasks history
+    logs = session.exec(
+        select(DailyLog).join(Task).where(
+            Task.user_id == current_user.id,
+            DailyLog.completed == True
+        )
+    ).all()
+
+    # 1. Weekly Pattern (Productivity by Day of Week)
+    week_stats = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0} # 0=Mon
+    for log in logs:
+        week_stats[log.log_date.weekday()] += 1
+    
+    weekly_chart = [
+        {"day": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][k], "tasks": v} 
+        for k, v in week_stats.items()
+    ]
+
+    # 2. Category Distribution
+    tasks = session.exec(select(Task).where(Task.user_id == current_user.id)).all()
+    task_map = {t.id: t.category for t in tasks}
+    
+    cat_counts = {}
+    for log in logs:
+        cat = task_map.get(log.task_id, "Unknown")
+        cat_counts[cat] = cat_counts.get(cat, 0) + 1
+        
+    category_chart = [{"name": k, "value": v} for k, v in cat_counts.items()]
+
+    # 3. Trend Analysis (Last 7 days)
+    today = date.today()
+    dates = [today - timedelta(days=i) for i in range(6, -1, -1)]
+    daily_counts = []
+    
+    for d in dates:
+        cnt = len([l for l in logs if l.log_date == d])
+        daily_counts.append(cnt)
+    
+    # Simple Heuristic Trend
+    recent = sum(daily_counts[-3:])
+    prev = sum(daily_counts[:3])
+    
+    trend_label = "Stable ➡️"
+    if recent > prev: trend_label = "Improving 📈"
+    elif recent < prev: trend_label = "Declining 📉"
+    
+    return {
+        "weekly_pattern": weekly_chart,
+        "category_distribution": category_chart,
+        "trend": trend_label,
+        "last_7_days": [{"date": d.strftime("%m-%d"), "completed": c} for d, c in zip(dates, daily_counts)]
+    }
