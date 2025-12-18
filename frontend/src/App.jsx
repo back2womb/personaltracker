@@ -151,6 +151,22 @@ function App() {
     }
   };
 
+  const handleExportData = async () => {
+    try {
+      const res = await api.get("/dashboard/admin/export_data");
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(res.data, null, 2));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", "daily_checklist_export.json");
+      document.body.appendChild(downloadAnchorNode); // required for firefox
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+    } catch (err) {
+      console.error("Export failed", err);
+      alert("Export failed");
+    }
+  };
+
   if (!token) {
     return <Login setToken={setToken} />;
   }
@@ -227,7 +243,10 @@ function App() {
               </div>
             </div>
 
-            <button onClick={() => setAdminStats(null)} className="btn btn-primary">Close</button>
+            <div className="flex-between" style={{ marginTop: '2rem' }}>
+              <button onClick={() => setAdminStats(null)} className="btn btn-outline">Close</button>
+              <button onClick={handleExportData} className="btn btn-primary">⬇️ Export Data</button>
+            </div>
           </div>
         </div>
       )}

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlmodel import Session, select
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 from app.core.database import get_session
 from app.api.deps import get_current_user
@@ -171,4 +171,41 @@ def get_admin_analytics(
         "logins": total_logins,
         "registrations": total_registrations,
         "total_users": unique_users
+    }
+
+@router.get("/admin/export_data")
+def export_admin_data(
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Exports all database data as JSON for the admin.
+    """
+    if current_user.id != 1:
+         return {"error": "Unauthorized"}
+    
+    users = session.exec(select(User)).all()
+    tasks = session.exec(select(Task)).all()
+    logs = session.exec(select(DailyLog)).all()
+    analytics = session.exec(select(AnalyticsEvent)).all()
+    
+    # helper to safely dump
+    def safe_dump(objs):
+        data = []
+        for o in objs:
+            d = o.dict()
+            if "hashed_password" in d:
+                del d["hashed_password"]
+            # Convert datetime to string
+            for k, v in d.items():
+                if isinstance(v, (date, datetime)):
+                    d[k] = v.isoformat()
+            data.append(d)
+        return data
+
+    return {
+        "users": safe_dump(users),
+        "tasks": safe_dump(tasks),
+        "logs": safe_dump(logs),
+        "analytics": safe_dump(analytics)
     }
