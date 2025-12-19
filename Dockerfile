@@ -22,6 +22,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend code
 COPY . .
+RUN chmod +x start.sh
 
 # Copy built frontend from Stage 1
 # We ensure the target directory exists
@@ -33,4 +34,4 @@ ENV PORT=8080
 EXPOSE 8080
 
 # Run
-CMD uvicorn app.main:app --host 0.0.0.0 --port $PORT
+CMD ["./start.sh"]
