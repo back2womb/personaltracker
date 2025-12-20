@@ -30,3 +30,5 @@ uvicorn==0.38.0
 requests==2.32.5
 beautifulsoup4==4.14.3
 huggingface_hub==0.20.1
+scikit-learn==1.4.0
+pandas==2.2.0

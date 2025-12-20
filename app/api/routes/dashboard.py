@@ -210,6 +210,34 @@ def export_admin_data(
         "analytics": safe_dump(analytics)
     }
 
+from app.ml.predictor import train_predictor_model, predict_task_success
+
+@router.post("/ml/train")
+def trigger_training(current_user: User = Depends(get_current_user)):
+    # Simple auth check
+    return train_predictor_model()
+
+@router.get("/ml/predict")
+def get_prediction(
+    category: str,
+    scheduled_minutes: int = 0,
+    title: str = "New Task",
+    current_user: User = Depends(get_current_user)
+):
+    prob = predict_task_success(category, scheduled_minutes, title)
+    if prob is None:
+        return {"error": "Model not trained yet"}
+    
+    # Interpretation
+    msg = "This seems manageable! 🟢"
+    if prob < 40: msg = "This might be tough today. 🔴"
+    elif prob < 70: msg = "Challenging but doable. 🟡"
+    
+    return {
+        "probability": prob,
+        "message": msg
+    }
+
 @router.get("/insights")
 def get_insights(
     session: Session = Depends(get_session),
